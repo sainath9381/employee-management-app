@@ -26,9 +26,7 @@ pipeline {
             steps {
 
                 sh 'git --version'
-
                 sh 'docker --version'
-
                 sh 'docker compose version'
             }
         }
@@ -38,10 +36,10 @@ pipeline {
             steps {
 
                 sh '''
-                    echo "Building Frontend Image..."
+                    echo "Building Frontend Docker Image..."
                     docker build -t $FRONTEND_IMAGE ./frontend
 
-                    echo "Building Backend Image..."
+                    echo "Building Backend Docker Image..."
                     docker build -t $BACKEND_IMAGE ./backend
                 '''
             }
@@ -73,10 +71,10 @@ pipeline {
             steps {
 
                 sh '''
-                    echo "Pushing Frontend Image..."
+                    echo "Pushing Frontend Image to Docker Hub..."
                     docker push $FRONTEND_IMAGE
 
-                    echo "Pushing Backend Image..."
+                    echo "Pushing Backend Image to Docker Hub..."
                     docker push $BACKEND_IMAGE
                 '''
             }
@@ -165,16 +163,16 @@ EOF
                         echo "Stopping old containers..."
                         docker compose down || true
 
-                        echo "Pulling latest images..."
+                        echo "Pulling latest Docker images..."
                         docker compose pull
 
-                        echo "Starting containers..."
+                        echo "Starting application containers..."
                         docker compose up -d
 
-                        echo "Checking containers..."
+                        echo "Checking running containers..."
                         docker compose ps
                         '
-                '''
+                    '''
                 }
             }
         }
@@ -190,13 +188,11 @@ EOF
 
                     echo "Checking Backend..."
 
-                    curl --fail \
-                    http://$EC2_HOST:5000/api/health
+                    curl --fail http://$EC2_HOST:5000/
 
                     echo "Checking Frontend..."
 
-                    curl --fail -I \
-                    http://$EC2_HOST:3000
+                    curl --fail -I http://$EC2_HOST:3000
                 '''
             }
         }
@@ -207,19 +203,21 @@ EOF
 
         success {
 
-            echo '========================================='
+            echo '=========================================='
             echo 'CI/CD Pipeline Completed Successfully!'
             echo 'Application deployed successfully to AWS EC2.'
             echo 'Frontend: http://23.22.154.120:3000'
-            echo 'Backend: http://23.22.154.120:5000/api/health'
-            echo '========================================='
+            echo 'Backend: http://23.22.154.120:5000/'
+            echo '=========================================='
         }
 
 
         failure {
 
+            echo '=========================================='
             echo 'CI/CD Pipeline Failed.'
             echo 'Check Jenkins Console Output for the error.'
+            echo '=========================================='
         }
 
 
