@@ -1,11 +1,8 @@
-version: '3.9'
-
 services:
 
   mysql:
     image: mysql:8.0
     container_name: mysql-db
-
     restart: always
 
     environment:
@@ -19,12 +16,12 @@ services:
       - mysql-data:/var/lib/mysql
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
 
+
   backend:
     build:
       context: ./backend
 
     container_name: employee-backend
-
     restart: always
 
     ports:
@@ -35,6 +32,21 @@ services:
 
     env_file:
       - ./backend/.env
+
+
+  frontend:
+    build:
+      context: ./frontend
+
+    container_name: employee-frontend
+    restart: always
+
+    ports:
+      - "3000:80"
+
+    depends_on:
+      - backend
+
 
 volumes:
   mysql-data:
